@@ -85,7 +85,7 @@ class AdalineSGD:
         self.w_initialized = False
     
     def fit(self, x, y):
-        self._initialized_weights(x.shape[1])
+        self._initialize_weights(x.shape[1])
         self.losses_ = []
         for i in range(self.n_iter):
             if self.shuffle:
@@ -105,10 +105,10 @@ class AdalineSGD:
             for xi, target in zip(x,y):
                 self._update_weights(xi,target)
         else:
-            self.__update_weights(x,y)
+            self._update_weights(x,y)
         return self
     
-    def shuffle(self, x, y):
+    def _shuffle(self, x, y):
         r = self.rgen.permutation(len(y))
         return x[r], y[r]
     
@@ -118,11 +118,11 @@ class AdalineSGD:
         self.b_ = np.float_(0.)
         self.w_initialized = True
 
-    def update_weights(self, xi, target):
+    def _update_weights(self, xi, target):
         output = self.activation(self.net_input(xi))
         error = (target - output)
         self.w_+= self.eta*2.0*xi*(error)
-        self.b += self.eta * 2.0 * error
+        self.b_ += self.eta * 2.0 * error
         loss = error**2
         return loss
 
@@ -213,19 +213,20 @@ X_std = np.copy(x)
 X_std[:,0] = (x[:,0] - x[:,0].mean())/x[:,0].std()
 X_std[:,1] = (x[:,1] - x[:,1].mean())/x[:,1].std()
 
-ada_gd = AdalineGD(n_iter=20, eta=0.5)
+ada_gd = AdalineSGD(n_iter=20, eta=0.1, random_state=1)
 ada_gd.fit(X_std, y)
 
-'''plot_decision_regions(X_std, y, classifier=ada_gd)
+plot_decision_regions(X_std, y, classifier=ada_gd)
 plt.xlabel('Septal length')
 plt.ylabel('petal length')
 plt.title('adaline - gradient decent')
 plt.legend(loc = 'upper left')
 plt.tight_layout()
-plt.show()'''
-
+plt.show()
+'''
 plt.plot(range(1,len(ada_gd.losses_)+1), ada_gd.losses_,marker='o')
 plt.xlabel('epochs')
 plt.ylabel('mean squared error')
 plt.tight_layout()
 plt.show()
+'''
